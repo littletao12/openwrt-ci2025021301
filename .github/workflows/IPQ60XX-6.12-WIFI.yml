@@ -100,11 +100,26 @@ jobs:
         mv package/new/custom/luci-app-netspeedtest  package/new
         mv package/new/custom/speedtest-cli package/new
         rm -rf package/new/custom
-        #git clone --depth=1 https://github.com/asvow/luci-app-tailscale package/luci-app-tailscale
-        git clone --depth=1 https://github.com/littletao12/openwrt-bin package/openwrt-bin
-        git clone --depth=1 https://github.com/nikkinikki-org/OpenWrt-nikki package/OpenWrt-nikki
         ./scripts/feeds install -a
-  
+        
+    - name: Custom Packages
+      run: |
+          cd ./openwrt/package/
+
+          $GITHUB_WORKSPACE/Scripts/Packages.sh
+          $GITHUB_WORKSPACE/Scripts/Handles.sh
+
+    - name: Custom Settings
+      run: |
+          cd ./openwrt/
+
+          rm -rf ./tmp* ./.config*
+
+          cat $GITHUB_WORKSPACE/Config/$WRT_TARGET.txt $GITHUB_WORKSPACE/Config/GENERAL.txt >> .config
+
+          $GITHUB_WORKSPACE/Scripts/Settings.sh
+
+          make defconfig -j$(nproc)
     - name: Load Custom Configuration(加载自定义配置)
       run: |
         [ -e files ] && mv files $OPENWRT_PATH/files
